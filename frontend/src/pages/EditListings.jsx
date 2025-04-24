@@ -63,6 +63,7 @@ const EditListing = () => {
         setListingType("free");
       } else {
         setListingType("sell");
+        setPrice(listingData.price)
       }
 
       setCategoryId(listingData.category);
@@ -148,8 +149,8 @@ const EditListing = () => {
       price: ""
     };
 
-    if (title.length < 5) {
-      newErrors.title = "Title must be at least 5 characters";
+    if (title.length < 5 || title.length > 100) {
+      newErrors.title = "Title must be at least 5-100 characters";
       isValid = false;
     }
 
@@ -202,6 +203,8 @@ const EditListing = () => {
       // Only append price if it's not a free listing
       if (listingType === "sell") {
         formData.append("price", price);
+      } else {
+        formData.append("price", "");
       }
 
        // Send data to the API
@@ -227,7 +230,7 @@ const EditListing = () => {
   const toggleListingType = () => {
     setListingType(listingType === "sell" ? "free" : "sell");
     if (listingType === "sell") {
-      setPrice(listingData.price);
+      setPrice(price);
     }
   };
 
@@ -393,6 +396,11 @@ const EditListing = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   maxLength={100}
                 />
+                {errors.title && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.title}
+                      </p>
+                    )}
                 <p className="mt-1 text-xs text-gray-500">
                   {100 - title.length} characters remaining
                 </p>
@@ -414,6 +422,11 @@ const EditListing = () => {
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+                {errors.description && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.description}
+                      </p>
+                    )}
               </div>
 
               {/* Price */}
@@ -491,6 +504,11 @@ const EditListing = () => {
                       </option>
                     ))}
                   </select>
+                  {errors.category && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.category}
+                      </p>
+                    )}
                 </div>
 
                 {/* Condition */}
@@ -514,6 +532,11 @@ const EditListing = () => {
                       </option>
                     ))}
                   </select>
+                  {errors.condition && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.condition}
+                      </p>
+                    )}
                 </div>
               </div>
 
@@ -538,6 +561,11 @@ const EditListing = () => {
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
+                {errors.location && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.location}
+                      </p>
+                    )}
               </div>
 
               {/* Form buttons */}

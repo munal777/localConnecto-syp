@@ -61,8 +61,8 @@ const CreateListing = () => {
       price: ""
     };
 
-    if (title.length < 5) {
-      newErrors.title = "Title must be at least 5 characters";
+    if (title.length < 5 || title.length > 100 ) {
+      newErrors.title = "Title must be at least 5-100 characters";
       isValid = false;
     }
 
