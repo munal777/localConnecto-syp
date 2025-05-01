@@ -116,7 +116,7 @@ class ItemSerializers(serializers.ModelSerializer):
         for i, image_data in enumerate(uploaded_images):
             item_image = ItemImage(
                 item= item,
-                order= 1
+                order= i
             )
 
             item_image.image = image_data

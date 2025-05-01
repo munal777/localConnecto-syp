@@ -32,12 +32,10 @@ class ItemsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Items.objects.filter(status='available')
-    
         return queryset
     
     def perform_create(self, serializer):
         serializer.save(user= self.request.user)
-
     
     @action(detail=False, methods=['get', 'put'], permission_classes=[permissions.IsAuthenticated, IsOwnerOrReadOnly])
     def users_items(self, request, pk=None):
@@ -51,32 +49,37 @@ class ItemsViewSet(viewsets.ModelViewSet):
     def add_image(self, request, pk=None):
         item = self.get_object()
 
-        if item.images.count() >= 3:
+        images = request.FILES.getlist('images')
+
+        if item.images.count() + len(images) > 3:
             return Response(
                {"detail": "Item already has the maximum of 3 images."},
                 status=status.HTTP_400_BAD_REQUEST 
             )
 
-        if 'image' not in request.data:
+        if not images:
             return Response(
                 {"detail": "No image file provided."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        # Create the image instance directly
-        item_image = ItemImage(
-            item=item,
-            order=item.images.count()
-        )
-
-        item_image.image = request.data['image']
-        item_image.save()
-
-        if hasattr(item_image.image, 'public_id'):
-            item_image.image_public_id = item_image.image.public_id
-            item_image.save()
         
-        serializer = ItemImageSerializer(item_image)
+        added_image = []
+        for i, image_file in enumerate(images):
+            item_images = ItemImage(
+                item= item,
+                order= item.images.count() + i
+            )
+            item_images.image = image_file
+            item_images.save()
+
+       
+            if hasattr(item_images.image, 'public_id'):
+                item_images.image_public_id = item_images.image.public_id
+                item_images.save()
+            
+            added_image.append(item_images)
+            
+        serializer = ItemImageSerializer(added_image, many=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     
@@ -122,13 +125,3 @@ class ItemsViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_200_OK)
     
-
-# class CurrentUserItems(viewsets.ModelViewSet):
-#     serializer_class = ItemSerializers
-#     permission_classes = [IsOwnerOrReadOnly]
-
-#     def get_queryset(self):
-#         queryset = Items.objects.filter(user= 'request.user')
-
-#         return queryset
-
