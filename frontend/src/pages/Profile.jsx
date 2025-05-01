@@ -28,14 +28,14 @@ const Profile = () => {
   const {
     profile,
     updateProfile,
-    isLoading: contextLoading,
-    fetchProfile,
+    // isLoading: contextLoading,
+    // fetchProfile,
   } = useUserProfile();
 
   const [activeTab, setActiveTab] = useState("listings");
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({});
-  const [imageFile, setImageFile] = useState(null);
+  // const [imageFile, setImageFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [listings, setUserListings] = useState([]);
 
@@ -81,7 +81,7 @@ const Profile = () => {
         return;
       }
 
-      setImageFile(file);
+      // setImageFile(file);
 
       const reader = new FileReader();
       reader.onloadend = () => {

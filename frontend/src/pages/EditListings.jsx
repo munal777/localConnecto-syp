@@ -33,7 +33,6 @@ const EditListing = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-
       try {
         const categoriesresponse = await api.get("/categories/");
         setCategories(categoriesresponse.data);
@@ -45,7 +44,7 @@ const EditListing = () => {
       } catch (error) {
         console.error("Fetch Error:", error);
         toast.error("Failed to load Data");
-        navigate('/listings');
+        navigate("/listings");
       }
     };
 
@@ -55,7 +54,6 @@ const EditListing = () => {
   // Initialize form with listing data
   useEffect(() => {
     if (listingData) {
-
       setTitle(listingData.title);
       setDescription(listingData.description);
 
@@ -63,6 +61,7 @@ const EditListing = () => {
         setListingType("free");
       } else {
         setListingType("sell");
+        setPrice(listingData.price);
       }
 
       setCategoryId(listingData.category);
@@ -72,21 +71,25 @@ const EditListing = () => {
     }
   }, [listingData, navigate]);
 
-
+  //Handle to show the existing images
   const getImageURL = (imageObj) => {
-    if (!imageObj || !imageObj.image) return '';
+    if (!imageObj || !imageObj.image) return "";
 
     let imageUrl = imageObj.image;
-    if (imageUrl.startsWith('image/upload/')) {
+    if (imageUrl.startsWith("image/upload/")) {
       return `https://res.cloudinary.com/dzetcdznm/${imageUrl}`;
     }
-    return imageUrl
-  }
+    return imageUrl;
+  };
 
   // Handle new image file selection
   const handleImageChange = (e) => {
     const fileList = e.target.files;
-    if (fileList && fileList.length > 0) {
+    if (
+      fileList &&
+      fileList.length > 0 &&
+      images.length + newImages.length < 3
+    ) {
       const filesArray = Array.from(fileList);
       setNewImages((prev) => [...prev, ...filesArray]);
 
@@ -95,16 +98,36 @@ const EditListing = () => {
         URL.createObjectURL(file)
       );
       setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+    } else {
+      toast.error("Max 3 Images only allowed");
     }
   };
 
+  console.log(newImages);
+
   // Handle removing an existing image
-  const removeExistingImage = (index) => {
-    setImages((prev) => prev.filter((_, i) => i !== index));
+  const removeExistingImage = async (index) => {
+    try {
+      const imageId = images[index].id;
+
+      await api.delete(`items/${id}/remove-image/${imageId}/`);
+
+      setImages((prev) => prev.filter((_, i) => i !== index));
+    } catch (error) {
+      if (error.response) {
+        toast.error(error.response.data.detail);
+      } else if (error.request) {
+        toast.error("Network error. Please try again.");
+      } else {
+        // Something else went wrong
+        toast.error("An unexpected error occurred.");
+      }
+    }
   };
 
   // Handle removing a new image
   const removeNewImage = (index) => {
+    console.log(index);
     setNewImages((prev) => prev.filter((_, i) => i !== index));
 
     // Also remove the preview URL and revoke the object URL to free memory
@@ -113,20 +136,38 @@ const EditListing = () => {
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
+  console.log(images);
+  console.log(newImages);
+
   // Save images changes
-  const handleSaveImages = () => {
-    // In a real app, you would upload the new images to a server/storage
-    toast.success("Images updated successfully!");
+  const handleSaveImages = async () => {
+    const formData = new FormData();
 
-    // Clear new images after successful upload
-    // In a real app, you would get the URLs from the server and add them to the images array
-    setNewImages([]);
+    newImages.forEach((file) => {
+      formData.append("images", file);
+    });
 
-    // Add preview URLs to images array (simulating server response)
-    setImages((prev) => [...prev, ...previewUrls]);
-    setPreviewUrls([]);
+    try {
+      const response = await api.post(`items/${id}/add_image/`, formData, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      toast.success("Images updated successfully!");
+
+      setNewImages([]);
+
+      const newUploadedImages = Array.isArray(response.data)
+        ? response.data
+        : [response.data];
+      setImages((prev) => [...prev, ...newUploadedImages]);
+      setPreviewUrls([]);
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.detail || "Image upload failed.");
+    }
   };
-
 
   const [errors, setErrors] = useState({
     title: "",
@@ -134,7 +175,7 @@ const EditListing = () => {
     category: "",
     condition: "",
     location: "",
-    price: ""
+    price: "",
   });
 
   const validateForm = () => {
@@ -145,11 +186,11 @@ const EditListing = () => {
       category: "",
       condition: "",
       location: "",
-      price: ""
+      price: "",
     };
 
-    if (title.length < 5) {
-      newErrors.title = "Title must be at least 5 characters";
+    if (title.length < 5 || title.length > 100) {
+      newErrors.title = "Title must be at least 5-100 characters";
       isValid = false;
     }
 
@@ -202,10 +243,12 @@ const EditListing = () => {
       // Only append price if it's not a free listing
       if (listingType === "sell") {
         formData.append("price", price);
+      } else {
+        formData.append("price", "");
       }
 
-       // Send data to the API
-       await api.put(`/items/${id}/`, formData, {
+      // Send data to the API
+      await api.put(`/items/${id}/`, formData, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
           "Content-Type": "multipart/form-data",
@@ -221,13 +264,13 @@ const EditListing = () => {
     } catch (error) {
       console.error("Error updating listing:", error);
     }
-  }
+  };
 
   // Toggle between free and priced item
   const toggleListingType = () => {
     setListingType(listingType === "sell" ? "free" : "sell");
     if (listingType === "sell") {
-      setPrice(listingData.price);
+      setPrice(price);
     }
   };
 
@@ -296,7 +339,7 @@ const EditListing = () => {
                       />
                       <button
                         onClick={() => removeExistingImage(index)}
-                        className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         aria-label="Remove image"
                       >
                         <Trash2 size={16} />
@@ -330,12 +373,12 @@ const EditListing = () => {
                       />
                       <button
                         onClick={() => removeNewImage(index)}
-                        className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="absolute top-2 right-2 p-1.5 bg-white/80 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                         aria-label="Remove image"
                       >
                         <Trash2 size={16} />
                       </button>
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 text-white opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/5 text-white opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                         <span className="px-2 py-1 bg-indigo-600 text-xs font-medium rounded">
                           New
                         </span>
@@ -393,6 +436,9 @@ const EditListing = () => {
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   maxLength={100}
                 />
+                {errors.title && (
+                  <p className="mt-1 text-sm text-red-600">{errors.title}</p>
+                )}
                 <p className="mt-1 text-xs text-gray-500">
                   {100 - title.length} characters remaining
                 </p>
@@ -414,59 +460,60 @@ const EditListing = () => {
                   rows={4}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                 />
+                {errors.description && (
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.description}
+                  </p>
+                )}
               </div>
 
               {/* Price */}
               <div>
-                    <div className="flex items-center mb-4">
-                      <button
-                        type="button"
-                        onClick={toggleListingType}
-                        className={`relative inline-flex h-6 w-11 mr-3 items-center rounded-full transition-colors ${
-                          listingType === "free"
-                            ? "bg-indigo-600"
-                            : "bg-gray-200"
-                        }`}
-                      >
-                        <span
-                          className={`${
-                            listingType === "free"
-                              ? "translate-x-6"
-                              : "translate-x-1"
-                          } inline-block h-4 w-4 rounded-full bg-white transition-transform`}
-                        />
-                      </button>
-                      <span className="font-medium text-sm">
-                        This item is free
-                      </span>
-                    </div>
+                <div className="flex items-center mb-4">
+                  <button
+                    type="button"
+                    onClick={toggleListingType}
+                    className={`relative inline-flex h-6 w-11 mr-3 items-center rounded-full transition-colors ${
+                      listingType === "free" ? "bg-indigo-600" : "bg-gray-200"
+                    }`}
+                  >
+                    <span
+                      className={`${
+                        listingType === "free"
+                          ? "translate-x-6"
+                          : "translate-x-1"
+                      } inline-block h-4 w-4 rounded-full bg-white transition-transform`}
+                    />
+                  </button>
+                  <span className="font-medium text-sm">This item is free</span>
+                </div>
 
-                    {listingType === "sell" && (
-                      <div>
-                        <label
-                          htmlFor="price"
-                          className="block text-sm font-medium text-gray-700 mb-1"
-                        >
-                          Price (Rs)
-                        </label>
-                        <input
-                          id="price"
-                          type="number"
-                          min="0.01"
-                          step="0.01"
-                          value={price}
-                          onChange={(e) => setPrice(e.target.value)}
-                          placeholder="Enter price"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                        />
-                        {errors.price && (
-                          <p className="mt-1 text-sm text-red-600">
-                            {errors.price}
-                          </p>
-                        )}
-                      </div>
+                {listingType === "sell" && (
+                  <div>
+                    <label
+                      htmlFor="price"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Price (Rs)
+                    </label>
+                    <input
+                      id="price"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={price}
+                      onChange={(e) => setPrice(e.target.value)}
+                      placeholder="Enter price"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    {errors.price && (
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.price}
+                      </p>
                     )}
                   </div>
+                )}
+              </div>
 
               {/* Category & Condition - side by side on larger screens */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -491,6 +538,11 @@ const EditListing = () => {
                       </option>
                     ))}
                   </select>
+                  {errors.category && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.category}
+                    </p>
+                  )}
                 </div>
 
                 {/* Condition */}
@@ -514,6 +566,11 @@ const EditListing = () => {
                       </option>
                     ))}
                   </select>
+                  {errors.condition && (
+                    <p className="mt-1 text-sm text-red-600">
+                      {errors.condition}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -538,6 +595,9 @@ const EditListing = () => {
                     className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
+                {errors.location && (
+                  <p className="mt-1 text-sm text-red-600">{errors.location}</p>
+                )}
               </div>
 
               {/* Form buttons */}

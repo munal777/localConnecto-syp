@@ -162,13 +162,6 @@ const ListingDetail = () => {
                   Listings
                 </Link>
                 <span className="mx-2 text-gray-500">/</span>
-                <Link
-                  to={`/listings/category/${listing.category}`}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  {listing.category_name}
-                </Link>
-                <span className="mx-2 text-gray-500">/</span>
                 <span className="text-gray-900 truncate max-w-[150px] sm:max-w-none">
                   {listing.title} - {listing.condition}
                 </span>
