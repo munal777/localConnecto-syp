@@ -115,7 +115,7 @@ localConnecto-syp/
 
 3. Create a `.env` file in the frontend directory with appropriate configurations:
    ```
-   VITE_API_URL=http://localhost:8000/api
+   VITE_API_URL=http://localhost:8000/
    ```
 
 4. Start the development server:
@@ -125,21 +125,6 @@ localConnecto-syp/
    ```
    The frontend application will be available at `http://localhost:5173/`
    ```
-
-## Technologies Used
-
-### Backend
-- Django
-- Django REST Framework
-- JWT Authentication
-- SendGrid (Email service)
-- Cloudinary (Image storage)
-
-### Frontend
-- React.js
-- Vite
-- Tailwind CSS
-- Axios for API requests
 
 ## Acknowledgments
 
