@@ -1,4 +1,4 @@
-# LocalConnecto
+# 🌍 LocalConnecto – Connect Locally. Share Freely. Trade Easily.
 
 LocalConnecto is a full-stack web application that allows users to share, buy, and sell items locally. The platform includes features contact sellers directly through their linked WhatsApp numbers, image uploads using Cloudinary, Google sign-in, and sending welcome emails upon registration.
 
@@ -45,6 +45,13 @@ localConnecto-syp/
 - allauth (Google OAuth)
 - SendGrid (Emails)
 - Cloudinary (Image uploads)
+
+### ⚙️ Setup Instructions
+1. Clone the repository
+   ```
+   git clone https://github.com/munal777/localConnecto-syp.git
+   cd localConnecto-syp
+   ```
 
 ### Backend Setup
 
@@ -132,31 +139,6 @@ localConnecto-syp/
 - Vite
 - Tailwind CSS
 - Axios for API requests
-
-## Environment Variables
-
-The application uses the following environment variables:
-
-### Backend
-```
-# SendGrid
-SENDGRID_API_KEY=your_sendgrid_api_key
-DEFAULT_FROM_EMAIL=your_email@example.com
-
-# Google Sign-in
-CLIENT_ID=your_google_client_id
-SECRET=your_google_client_secret
-
-# Cloudinary
-CLOUD_NAME=your_cloud_name
-API_KEY=your_api_key
-API_SECRET=your_api_secret
-```
-
-### Frontend
-```
-VITE_API_URL=http://localhost:8000/
-```
 
 ## Acknowledgments
 
