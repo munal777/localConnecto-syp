@@ -47,6 +47,7 @@ localConnecto-syp/
 - Cloudinary (Image uploads)
 
 ### ⚙️ Setup Instructions
+
 1. Clone the repository
    ```
    git clone https://github.com/munal777/localConnecto-syp.git
