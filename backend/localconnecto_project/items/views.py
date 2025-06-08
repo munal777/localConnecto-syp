@@ -16,7 +16,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
             permission_classes = [permissions.AllowAny]
         else:
             permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
-        return [permission() for permission in permission_classes]
+        return [permission() for permission in permission_classes]  # create instances of each permission class
 
 
 class ItemsViewSet(viewsets.ModelViewSet):

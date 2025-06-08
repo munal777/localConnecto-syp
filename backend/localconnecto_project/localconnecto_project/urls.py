@@ -27,4 +27,7 @@ urlpatterns = [
     path('', include('items.urls'))
     # path('auth/social/', include('allauth.socialaccount.urls')),  # Social account URLs
     # path('auth/google/', include('allauth.socialaccount.providers.google.urls')), 
+
+    #otp-based pw changes functionality
+    
 ]

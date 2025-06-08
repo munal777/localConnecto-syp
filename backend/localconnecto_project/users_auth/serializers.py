@@ -121,3 +121,16 @@ class UserProfileSerializer(serializers.ModelSerializer):
         instance.save()
 
         return instance
+    
+
+#Password change functionality with the OTP-based serializers
+
+class SendOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, attrs):
+        email = attrs.get('email', '')
+        if not User.objects.filter(email= email).exists():
+            raise serializers.ValidationError("No account exist with this email.")
+
+        return attrs       
