@@ -4,6 +4,7 @@ from dj_rest_auth.registration.serializers import RegisterSerializer
 from .models import UserProfile
 from cloudinary.uploader import upload, destroy
 import os
+from django.core.cache import cache
 
 User = get_user_model()
 
@@ -134,3 +135,66 @@ class SendOTPSerializer(serializers.Serializer):
             raise serializers.ValidationError("No account exist with this email.")
 
         return attrs       
+    
+
+
+
+class ValidateOTPSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    otp = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        otp = attrs.get("otp")
+
+        key= f"otp:{email}"
+        stored_otp = cache.get(key)
+
+        if stored_otp is None:
+            raise serializers.ValidationError("OTP has expired or was not found.")
+        
+        if stored_otp != otp:
+            raise serializers.ValidationError("Invalid OTP.")
+        
+        # OTP is valid, now mark as verified
+        cache.delete(key)
+        cache.set(f"otp_verified:{email}", True, timeout=300)
+        
+        return attrs
+
+
+class ChangePasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def validate(self, attrs):
+        email = attrs.get("email")
+        password = attrs.get("password")
+        verified_key = f"otp_verified:{email}"
+
+        if not cache.get(verified_key):
+            raise serializers.ValidationError("OTP not verified or expired.")
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("User not found")
+
+        if user.check_password(password):
+            raise serializers.ValidationError("New password can’t be the same as the old one.")
+
+        attrs["user"] = user
+
+        return attrs
+    
+
+    def save(self):
+        user = self.validated_data["user"]
+        new_password = self.validated_data["password"]
+
+        verified_key = f"otp_verified:{user.email}"
+
+        user.set_password(new_password)
+        user.save()
+
+        cache.delete(verified_key)

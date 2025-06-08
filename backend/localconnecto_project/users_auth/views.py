@@ -9,11 +9,15 @@ import json
 from django.contrib.auth.decorators import login_required
 from rest_framework import status
 from rest_framework import generics
-from .serializers import UserDataSerializer, UserProfileSerializer
+from .serializers import UserDataSerializer, UserProfileSerializer,  SendOTPSerializer, ValidateOTPSerializer, ChangePasswordSerializer
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework import viewsets
+from rest_framework.views import APIView
 from .models import UserProfile
 from rest_framework.response import Response
+from .tasks import send_otp
+from .utils import generate_otp
+from django.core.cache import cache
 
 User = get_user_model()
 
@@ -40,6 +44,48 @@ class UserProfileViewSet(viewsets.ModelViewSet):
             status=status.HTTP_400_BAD_REQUEST
         )
 
+
+class SendOTPView(APIView):
+
+    permission_classes = [AllowAny]
+    
+    def post(self, request):
+        serializer = SendOTPSerializer(data=request.data)
+
+        if serializer.is_valid():
+            email = serializer.validated_data['email']
+            otp_code = generate_otp()
+            cache.set(f"otp:{email}", otp_code, timeout=300)
+            send_otp.delay(email, otp_code)
+
+            return Response({"message": "OTP send to email"}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ValidateOTPView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ValidateOTPSerializer(data=request.data)
+
+        if serializer.is_valid():
+            return Response({"message": "OTP verified successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordAPIView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({"message": "Password changed successfully."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @login_required
