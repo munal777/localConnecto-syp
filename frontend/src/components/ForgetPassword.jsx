@@ -40,27 +40,29 @@ export default function ForgetPassword({ show, onClose }) {
       await api.post("/send-otp/", { email: resetEmail });
     } catch (err) {
       if (err.response) {
-        data = err.response.data;
+        const responseData = err.response.data; // ✅ safer variable name, no conflict
 
-        if (typeof data === "string") {
-          toast.error(data); // Rare, but possible
-        } else if (typeof data === "object") {
-          Object.entries(data).forEach(([field, messages]) => {
+        if (typeof responseData === "string") {
+          toast.error(responseData);
+        } else if (typeof responseData === "object") {
+          Object.entries(responseData).forEach(([field, messages]) => {
             if (Array.isArray(messages)) {
               messages.forEach((msg) => {
                 if (field === "non_field_errors") {
                   toast.error(msg);
                 } else {
-                  toast.error(`${field}: ${msg}`); // Field-specific error
+                  toast.error(`${field}: ${msg}`);
                 }
               });
             }
           });
         }
       } else {
-        // Network or other unknown error
         toast.error("Something went wrong. Please try again.");
       }
+      return;
+    } finally {
+      setIsLoading(false);
     }
 
     setTimeout(() => {
