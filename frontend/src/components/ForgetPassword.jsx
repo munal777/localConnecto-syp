@@ -12,7 +12,6 @@ export default function ForgetPassword({ show, onClose }) {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  //   const [resetSent, setResetSent] = useState(false);
 
   const resetStates = () => {
     setStep(1);
@@ -37,6 +36,7 @@ export default function ForgetPassword({ show, onClose }) {
 
     setIsLoading(true);
 
+    // api call
     try {
       const resData = await api.post("/send-otp/", { email: resetEmail });
 
@@ -74,6 +74,7 @@ export default function ForgetPassword({ show, onClose }) {
     }, 1500);
   };
 
+
   // step - 2
   const handleVerifyOtp = async () => {
     if (!otp) {
@@ -93,6 +94,7 @@ export default function ForgetPassword({ show, onClose }) {
 
     setIsLoading(true);
     
+    //api call
     try {
       const resData = await api.post("/verify-otp/", { email: resetEmail, otp: otp });
 
@@ -130,6 +132,8 @@ export default function ForgetPassword({ show, onClose }) {
     }, 1500);
   };
 
+
+  // step - 3
   const handleResetPassword = async () => {
     if (!newPassword || !confirmPassword) {
       toast.error("Please fill both password fields");
