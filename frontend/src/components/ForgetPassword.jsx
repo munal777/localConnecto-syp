@@ -37,10 +37,12 @@ export default function ForgetPassword({ show, onClose }) {
     setIsLoading(true);
 
     try {
-      await api.post("/send-otp/", { email: resetEmail });
+      const resData = await api.post("/send-otp/", { email: resetEmail });
+
+      toast.success(resData.data.message)
     } catch (err) {
       if (err.response) {
-        const responseData = err.response.data; // ✅ safer variable name, no conflict
+        const responseData = err.response.data; 
 
         if (typeof responseData === "string") {
           toast.error(responseData);
