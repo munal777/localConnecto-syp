@@ -28,6 +28,7 @@ export default function ForgetPassword({ show, onClose }) {
     onClose();
   };
 
+  // step - 1
   const handleSendOtp = async () => {
     if (!resetEmail) {
       toast.error("Please enter your email");
@@ -73,6 +74,7 @@ export default function ForgetPassword({ show, onClose }) {
     }, 1500);
   };
 
+  // step - 2
   const handleVerifyOtp = async () => {
     if (!otp) {
       toast.error("Please enter the OTP code");
@@ -90,7 +92,37 @@ export default function ForgetPassword({ show, onClose }) {
     }
 
     setIsLoading(true);
-    //api call
+    
+    try {
+      const resData = await api.post("/verify-otp/", { email: resetEmail, otp: otp });
+
+      toast.success(resData.data.message)
+    } catch (err) {
+      if (err.response) {
+        const responseData = err.response.data; 
+
+        if (typeof responseData === "string") {
+          toast.error(responseData);
+        } else if (typeof responseData === "object") {
+          Object.entries(responseData).forEach(([field, messages]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((msg) => {
+                if (field === "non_field_errors") {
+                  toast.error(msg);
+                } else {
+                  toast.error(`${field}: ${msg}`);
+                }
+              });
+            }
+          });
+        }
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+      return;
+    } finally {
+      setIsLoading(false);
+    }
 
     setTimeout(() => {
       setIsLoading(false);
