@@ -44,9 +44,20 @@ export default function ForgetPassword({ show, onClose }) {
 
   const handleVerifyOtp = async () => {
     if (!otp) {
-      toast.error("Please enter the OTP code");
-      return;
+        toast.error("Please enter the OTP code");
+        return;
     }
+
+    if (!/^\d+$/.test(otp)) {
+        toast.error("OTP must contain digits only.");
+        return;
+    }
+
+    if (otp.length !== 6) {
+        toast.error("OTP must be of Six digit Numbers")
+        return;
+    }
+
     setIsLoading(true);
     //api call
 
@@ -61,22 +72,28 @@ export default function ForgetPassword({ show, onClose }) {
       toast.error("Please fill both password fields");
       return;
     }
-    if (newPassword !== confirmPassword) {
+
+    const trimmedNewPassword = newPassword.trim();
+    const trimmedConfirmPassword = confirmPassword.trim();
+
+    if (trimmedNewPassword !== trimmedConfirmPassword) {
       toast.error("Passwords do not match");
       return;
     }
 
-    if (password.length < 8) {
+    if (trimmedNewPassword.length < 8) {
       toast.error("Password must be at least 8 characters.");
       return;
-    } else if (!/(?=.*[A-Za-z])/.test(password)) {
+    } else if (!/(?=.*[A-Za-z])/.test(trimmedNewPassword)) {
       toast.error("Password must contain at least one letter.");
       return;
-    } else if (!/(?=.*\d)/.test(password)) {
+    } else if (!/(?=.*\d)/.test(trimmedNewPassword)) {
       toast.error("Password must contain at least one digit.");
       return;
     }
 
+    
+    
     setIsLoading(true);
     //api call
 
