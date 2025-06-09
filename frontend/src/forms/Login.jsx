@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { MapPinHouse } from "lucide-react";
 import { userAuthentication } from "../auth/auth";
+import ForgetPassword from "../components/ForgetPassword"
 
 function Login() {
   const {login} = userAuthentication()
@@ -14,7 +15,9 @@ function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-   const [rememberMe, setRememberMe] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+
 
   const notify = (message) => toast.success(message);
 
@@ -173,9 +176,15 @@ return (
                     Remember Password
                   </label>
                 </div>
-                <button type="button" className="text-sm text-indigo-600 hover:text-indigo-700 font-medium">
+                <button  
+                  type="button" 
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+                >
                   Forgot Password?
                 </button>
+
+                <ForgetPassword show={showForgotPassword} onClose={() => setShowForgotPassword(false)}/>
               </div>
 
               {/* Login Button */}
