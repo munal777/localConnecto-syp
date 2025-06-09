@@ -156,7 +156,37 @@ export default function ForgetPassword({ show, onClose }) {
     }
 
     setIsLoading(true);
+
     //api call
+    try {
+      const resData = await api.post("/reset-password/", { email: resetEmail, password: trimmedNewPassword });
+
+    } catch (err) {
+      if (err.response) {
+        const responseData = err.response.data; 
+
+        if (typeof responseData === "string") {
+          toast.error(responseData);
+        } else if (typeof responseData === "object") {
+          Object.entries(responseData).forEach(([field, messages]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((msg) => {
+                if (field === "non_field_errors") {
+                  toast.error(msg);
+                } else {
+                  toast.error(`${field}: ${msg}`);
+                }
+              });
+            }
+          });
+        }
+      } else {
+        toast.error("Something went wrong. Please try again.");
+      }
+      return;
+    } finally {
+      setIsLoading(false);
+    }
 
     setTimeout(() => {
       setIsLoading(false);
