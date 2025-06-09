@@ -26,8 +26,9 @@ localConnecto-syp/
 - 📦 List items for sale or for free
 - 🖼️ Image upload using Cloudinary
 - 💬 WhatsApp integration for direct user communication
-- 📧 Welcome email after user registration
 - 🔐 JWT authentication and Google Sign-in
+- ✉️ OTP-based password change functionality using Redis
+- ⚙️ Asynchronous email sending (OTP & welcome emails) with Celery
 - 📱 Responsive user interface
 
 ## 🛠️ Tech Stack
@@ -43,6 +44,8 @@ localConnecto-syp/
 - dj-rest-auth
 - djangorestframework-simplejwt
 - allauth (Google OAuth)
+- Redis (Caching OTPs)
+- Celery with Redis (Task queue for asynchronous email sending)
 - SendGrid (Emails)
 - Cloudinary (Image uploads)
 
@@ -92,11 +95,19 @@ localConnecto-syp/
    API_KEY=your_api_key
    API_SECRET=your_api_secret
    ```
-
-5. Navigate to the project directory and run the server:
+   
+4. Start Redis using Docker:
+   ```
+   docker run -d --name redis -p 6379:6379 redis:latest
+   ```
+   
+5. Navigate to the project and Run the Django Server and Celery Worker (in separate terminals):
    ```
    cd localconnecto_project
+   terminal 1:
    python manage.py runserver
+   terminal 2:
+   celery -A localconnecto_project worker --loglevel=info --pool=solo
    ```
    The backend server will start at `http://localhost:8000/`
 
@@ -129,4 +140,6 @@ localConnecto-syp/
 
 - SendGrid for email services
 - Cloudinary for image storage solutions
+- Redis (via Docker) for caching and task queue backend
+- Celery for asynchronous task execution
 - Google for authentication services
