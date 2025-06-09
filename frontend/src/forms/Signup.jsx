@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import api from "../api/api";
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Eye, EyeOff, MapPinHouse } from "lucide-react";
+import { MapPinHouse } from "lucide-react";
 import { userAuthentication } from "../auth/auth";
 
 function Signup() {
@@ -132,7 +132,7 @@ function Signup() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-6xl flex bg-white rounded-2xl shadow-xl overflow-hidden">
         {/* Left Side - Sign Up Form */}
-        <div className="w-full lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
+        <form className="w-full lg:w-1/2 p-8 lg:p-16 flex flex-col justify-center">
           <div className="max-w-md mx-auto w-full">
             {/* Logo */}
             <div className="mb-8">
@@ -299,7 +299,7 @@ function Signup() {
               <span className="text-gray-700 font-medium">Sign up with Google</span>
             </button>
           </div>
-        </div>
+        </form>
 
         {/* Right Side */}
         <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-indigo-50 to-indigo-100 items-center justify-center p-16">
