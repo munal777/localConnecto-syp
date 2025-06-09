@@ -2,7 +2,8 @@ import React from "react";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { Mail, X, KeyRound, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
+import api from "../api/api";
 
 export default function ForgetPassword({ show, onClose }) {
   const [step, setStep] = useState(1);
@@ -29,13 +30,39 @@ export default function ForgetPassword({ show, onClose }) {
 
   const handleSendOtp = async () => {
     if (!resetEmail) {
-        toast.error("Please enter your email") 
-        return;
-    } 
-    
+      toast.error("Please enter your email");
+      return;
+    }
 
     setIsLoading(true);
-    // Simulate API call
+
+    try {
+      await api.post("/send-otp/", { email: resetEmail });
+    } catch (err) {
+      if (err.response) {
+        data = err.response.data;
+
+        if (typeof data === "string") {
+          toast.error(data); // Rare, but possible
+        } else if (typeof data === "object") {
+          Object.entries(data).forEach(([field, messages]) => {
+            if (Array.isArray(messages)) {
+              messages.forEach((msg) => {
+                if (field === "non_field_errors") {
+                  toast.error(msg);
+                } else {
+                  toast.error(`${field}: ${msg}`); // Field-specific error
+                }
+              });
+            }
+          });
+        }
+      } else {
+        // Network or other unknown error
+        toast.error("Something went wrong. Please try again.");
+      }
+    }
+
     setTimeout(() => {
       setIsLoading(false);
       setStep(2); //proceed to OTP input
@@ -44,18 +71,18 @@ export default function ForgetPassword({ show, onClose }) {
 
   const handleVerifyOtp = async () => {
     if (!otp) {
-        toast.error("Please enter the OTP code");
-        return;
+      toast.error("Please enter the OTP code");
+      return;
     }
 
     if (!/^\d+$/.test(otp)) {
-        toast.error("OTP must contain digits only.");
-        return;
+      toast.error("OTP must contain digits only.");
+      return;
     }
 
     if (otp.length !== 6) {
-        toast.error("OTP must be of Six digit Numbers")
-        return;
+      toast.error("OTP must be of Six digit Numbers");
+      return;
     }
 
     setIsLoading(true);
@@ -92,8 +119,6 @@ export default function ForgetPassword({ show, onClose }) {
       return;
     }
 
-    
-    
     setIsLoading(true);
     //api call
 
@@ -224,8 +249,12 @@ export default function ForgetPassword({ show, onClose }) {
                   >
                     {isLoading ? "Verifying..." : "Verify OTP"}
                   </button>
-                  
-                  <Link onClick={() => setStep(1)} disabled={isLoading} className="mt-3 text-indigo-600 text-sm underline">
+
+                  <Link
+                    onClick={() => setStep(1)}
+                    disabled={isLoading}
+                    className="mt-3 text-indigo-600 text-sm underline"
+                  >
                     Didn't receive OTP? Go Back
                   </Link>
                 </div>
