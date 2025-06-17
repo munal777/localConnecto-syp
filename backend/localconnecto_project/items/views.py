@@ -7,6 +7,8 @@ from rest_framework.response import Response
 from cloudinary import uploader
 from .permissions import IsOwnerOrReadOnly
 from .paginations import ItemPagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = ItemCategory.objects.all()
@@ -22,6 +24,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
 class ItemsViewSet(viewsets.ModelViewSet):
     serializer_class = ItemSerializers
     pagination_class = ItemPagination
+
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    search_fields = ['title', 'location']
+    filterset_fields = {
+        'price': ['exact', 'gte', 'lte'],
+        'category': ['exact'],
+        'listing_type': ['exact'],
+    }
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'retrieve':
