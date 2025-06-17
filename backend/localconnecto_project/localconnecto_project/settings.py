@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'cloudinary_storage',
     'cloudinary',
-
+    'django_filters',
 
     #apps
     'users_auth',
@@ -273,3 +273,12 @@ CACHES = {
         }
     }
 }
+
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ),
+}
+
